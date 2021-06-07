@@ -1,37 +1,77 @@
-# [Balloon Tip](https://github.com/Cryden13/Python/tree/main/balloontip)
+# [WinNotify](https://github.com/Cryden13/WinNotify)
+
+A collection of methods that simplify a couple small Windows UI elements.
+
+## Methods
+
+### `CreateBalloontip`
 
 Creates a popup balloontip on Windows 10
 
-## Usage
+**Parameters:**
 
-`Balloontip`( title, msg [, timeout, iconpath, silent] )
+- *title* (str): The text to display at the top of the balloontip
+- *msg* (str): The text to display as the body of the balloontip
+- *timeout* (int|float, optional): [default=6] Seconds to keep the balloontip active. After ~4 seconds it is put into the action center
+- *icon* (str, optional): [default="default"] The balloontip's icon. One of "default", "info", "warning", "error", or an *.ico image file path
+- *silent* (bool, optional): [default=False] Whether to play a sound when the balloontip is displayed
 
-## Parameters
+### `Messagebox`
 
-1. ### `title` _(required)_
+Display a PyQt5.QMessageBox
 
-   **String**  
-   The text to display at the top of the balloontip
+#### **Class Methods**
 
-2. ### `msg` _(required)_
+`askquestion`
 
-   **String**  
-   The text to display as the body of the balloontip
+Asks the user a question and waits for the response.  
 
-3. ### `timeout` _(optional)_
+**Parameters:**
 
-   **Integer OR Float** _(default=7)_  
-   The number of seconds to keep the balloontip active. Keep in mind that after about 4 seconds it will be put into the action center
+- *title* (str): The messagebox window title
+- *message* (str): The question to ask in the body of the messagebox
+- *buttons* (tuple[str], optional): [default=("yes", "no")] The buttons to show. The first item listed will be set as the default button, the last will be the 'escape' button if listed. Any combination of: ok, open, save, cancel, close, discard, apply, reset, restoredefaults, help, saveall, yes, yestoall, no, notoall, abort, retry, ignore
+- *icon* (str, optional): [default="question"] The messagebox icon. One of: noicon, question, info, warning, critical
+- *sound* (str, optional): [default="silent"] The sound to play with the messagebox. One of: silent, info, error
 
-4. ### `icon` _(optional)_
+**Returns:**
 
-   **String** _(default="default")_  
-   The balloontip's icon. Can be one of "default", "info", "warning", "error", or an *.ico image file path. If "default" or None, it will be set to the default python icon
+- str : The lowercase text of the pressed button
 
-5. ### `silent` _(optional)_
+**`showinfo`**
 
-   **bool** _(default=False)_  
-   Whether to play a sound when the balloontip is displayed
+Shows the user an infobox.
+
+**Parameters:**
+
+- *title* (str): The messagebox window title
+- *message* (str): The info message in the body of the messagebox
+
+**`showwarning`**
+
+Shows the user a warning message.
+
+**Parameters:**
+
+- *title* (str): The messagebox window title
+- *message* (str): The warning message in the body of the messagebox
+
+**`showerror`**
+
+Shows the user an error message.
+
+**Parameters:**
+
+- *title* (str): The messagebox window title
+- *message* (str): The warning message in the body of the messagebox
+
+### `PlaySound`
+
+Play a default Windows 10 sound
+
+**Parameters:**
+
+- *sound* (str, optional): [default="Hand"] Which sound to play. One of "Asterisk", "Beep", "Exclamation", "Hand", "Question", or a "Windows [__].wav" file from C:\\WINDOWS\\Media
 
 ## Changelog
 
@@ -75,6 +115,19 @@ Creates a popup balloontip on Windows 10
                     <ul>
                         <li>fixed timeout errors</li>
                         <li>fixed error messages</li>
+                    </ul>
+                </dl>
+            </td>
+        </tr>
+        <tr>
+            <td align="center">3.0</td>
+            <td>
+                <dl>
+                    <dt>new</dt>
+                    <ul>
+                        <li>changed package name to winnotify</li>
+                        <li>added Messagebox method</li>
+                        <li>added PlaySound method</li>
                     </ul>
                 </dl>
             </td>

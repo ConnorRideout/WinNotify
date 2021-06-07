@@ -1,19 +1,21 @@
-from subprocess import Popen, CREATE_NO_WINDOW
+from subprocess import (Popen,
+                        CREATE_NO_WINDOW
+                        )
 from pathlib import Path
 
 
-def playSound(sound: str = "Hand"):
-    """Play a default Windows 10 sound
+def PlaySound(sound: str = "Hand"):
+    """-----
+    Play a default Windows 10 sound
 
-Parameters
-----------
-sound : str, optional (default is "Hand")
-    Which sound to play. One of "Asterisk", "Beep", "Exclamation",
-    "Hand", "Question", or a "Windows __.wav" file from C:\\WINDOWS\\Media
-"""
-    media = Path('C:\\WINDOWS\\Media')
+    Parameters
+    ----------
+    sound (str, optional): [default="Hand"] Which sound to play. One of "Asterisk", "Beep", "Exclamation", "Hand", "Question", or a "Windows [__].wav" file from C:\\WINDOWS\\Media
+    """
+
     syssounds = ["Asterisk", "Beep", "Exclamation", "Hand", "Question"]
-    winsounds = [p for p in media.glob('Windows *.wav') if sound in p.stem]
+    winsounds = [p for p in Path('C:\\WINDOWS\\Media').glob('Windows *.wav')
+                 if sound in p.stem]
     Sound = sound.title()
     if Sound in syssounds:
         cmd = f'[system.media.systemsounds]::{Sound}.play()'

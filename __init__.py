@@ -1,4 +1,5 @@
 from .balloontip import CreateBalloontip
-from .playsound import playSound
+from .messagebox import Messagebox
+from .playsound import PlaySound
 
-__all__ = ['CreateBalloontip', 'playSound']
+__all__ = ['CreateBalloontip', 'Messagebox', 'PlaySound']

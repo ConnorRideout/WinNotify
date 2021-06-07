@@ -14,6 +14,7 @@ py_icon = Path(py_exe).parent.joinpath("DLLs", "py.ico")
 
 class CreateBalloontip:
     """Creates a popup balloontip on Windows 10"""
+
     title: str
     msg: str
     timeout: U[int, float]
@@ -29,17 +30,17 @@ class CreateBalloontip:
         """\
         Parameters
         ----------
-        title : str
-            The text to display at the top of the balloontip
-        msg : str
-            The text to display as the body of the balloontip
-        timeout : int | float, optional (default is 6)
-            Seconds to keep the balloontip active. After ~4 seconds it is put into the action center
-        icon : str, optional (default is "default")
-            The balloontip's icon. One of "default", "info", "warning", "error", or an *.ico image file path
-        silent : bool, optional (default is False)
-            Whether to play a sound when the balloontip is displayed
+        title (str): The text to display at the top of the balloontip
+
+        msg (str): The text to display as the body of the balloontip
+
+        timeout (int|float, optional): [default=6] Seconds to keep the balloontip active. After ~4 seconds it is put into the action center
+
+        icon (str, optional): [default="default"] The balloontip's icon. One of "default", "info", "warning", "error", or an *.ico image file path
+
+        silent (bool, optional): [default=False] Whether to play a sound when the balloontip is displayed
         """
+
         self.title = title
         self.msg = msg
         self.timeout = timeout

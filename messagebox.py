@@ -1,14 +1,28 @@
+from typing import Union as U
+from sys import argv
+
 from PyQt5.QtWidgets import (
     QApplication,
     QMessageBox,
     QAbstractButton
 )
-from typing import Union as U
-from sys import argv
 
 
 class Messagebox(QMessageBox):
-    """Display a PyQt5.QMessageBox"""
+    """-----
+    Display a PyQt5.QMessageBox
+
+    Class Methods
+    ----------
+    askquestion: Asks the user a question and returns the response
+
+    showinfo: Show the user a simple info dialog
+
+    showwarning: Show the user a simple warning dialog
+
+    showerror: Show the user a simple error dialog
+    """
+
     _icons = dict(noicon=QMessageBox.NoIcon,
                   question=QMessageBox.Question,
                   info=QMessageBox.Information,
@@ -33,6 +47,7 @@ class Messagebox(QMessageBox):
                     retry=QMessageBox.Retry,
                     ignore=QMessageBox.Ignore)
     out: str
+    _ = QApplication(argv[:1])
 
     def __init__(self,
                  title: str,
@@ -42,7 +57,6 @@ class Messagebox(QMessageBox):
                             QMessageBox.StandardButtons] = QMessageBox.Ok,
                  default: QMessageBox.StandardButton = QMessageBox.NoButton,
                  escape: QMessageBox.StandardButton = QMessageBox.NoButton):
-        _ = QApplication(argv[:1])
         QMessageBox.__init__(self)
         self.setWindowTitle(title)
         self.setText(message)
@@ -59,7 +73,7 @@ class Messagebox(QMessageBox):
     @classmethod
     def askquestion(cls, title: str, message: str, buttons: tuple[str] = ("yes", "no"), icon: str = "question") -> str:
         """-----
-        Ask a question
+        Ask the user a question
 
         Parameters
         ----------

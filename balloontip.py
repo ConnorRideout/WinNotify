@@ -25,7 +25,7 @@ class CreateBalloontip:
     _infoFlags: int
     _hicon: HANDLE
 
-    def __init__(self, title: str, msg: str, timeout: U[int, float] = 6,
+    def __init__(self, title: str, message: str, timeout: U[int, float] = 6,
                  icon: O[str] = 'default', silent: bool = False):
         """\
         Parameters
@@ -42,7 +42,7 @@ class CreateBalloontip:
         """
 
         self.title = title
-        self.msg = msg
+        self.msg = message
         self.timeout = timeout
         self.icon = icon
         self._run(silent)

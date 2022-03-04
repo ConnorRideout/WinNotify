@@ -108,12 +108,14 @@ class InputDialog(QDialog):
     class ChildWidget:
         """Builder class for the dialog. Available methods are checkbox, combobox, spinbox, or textbox"""
 
-        def checkbox(default: bool = False) -> QCheckBox:
+        def checkbox(text: str = "", default: bool = False) -> QCheckBox:
             """-----
             Build a QCheckBox
 
             Parameters
             ----------
+            text (str, optional): [default=""] the checkbox's text
+
             default (bool, optional): [default=False] the default state of the checkbox
 
 
@@ -122,7 +124,7 @@ class InputDialog(QDialog):
             QCheckBox : the initialized QCheckBox
             """
 
-            cbx = QCheckBox()
+            cbx = QCheckBox(text)
             cbx.setChecked(default)
             return cbx
 
@@ -170,7 +172,7 @@ class InputDialog(QDialog):
 
             Returns:
             --------
-            QSpinBox | QDoubleSpinBox : the initialized QSpinBox or QDoubleSpinBox
+            QSpinBox | QDoubleSpinBox : the initialized QSpinBox (ints) or QDoubleSpinBox (floats)
             """
 
             if isinstance(from_ + to + step, float):

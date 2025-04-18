@@ -1,13 +1,19 @@
-from subprocess import run, CREATE_NEW_CONSOLE
 from sys import executable as py_exe
-from typing import (Optional as O,
-                    Union as U)
 from pywintypes import HANDLE
 from re import sub as re_sub
 from pathlib import Path
 import win32gui as gui32
 import win32con as con32
 from time import sleep
+
+from subprocess import (
+    CREATE_NEW_CONSOLE,
+    run
+)
+from typing import (
+    Optional as O,
+    Union as U
+)
 
 py_icon = Path(py_exe).parent.joinpath("DLLs", "py.ico")
 
@@ -27,7 +33,8 @@ class CreateBalloontip:
 
     def __init__(self, title: str, message: str, timeout: U[int, float] = 6,
                  icon: O[str] = 'default', silent: bool = False):
-        """\
+        """Creates a popup balloontip on Windows 10
+
         Parameters
         ----------
         title (str): The text to display at the top of the balloontip
@@ -97,7 +104,7 @@ class CreateBalloontip:
         gui32.Shell_NotifyIcon(gui32.NIM_DELETE, nid)
         gui32.PostQuitMessage(0)
 
-    def _run(self, quiet: bool = False):
+    def _run(self, silent: bool = False):
         message_map = {con32.WM_DESTROY: self._onDestroy, }
         # register the window class
         wc = gui32.WNDCLASS()
@@ -118,7 +125,7 @@ class CreateBalloontip:
         except Exception as e:
             self._showError(e, 'exit')
             return
-        self._infoFlags = gui32.NIIF_NOSOUND if quiet else 0
+        self._infoFlags = gui32.NIIF_NOSOUND if silent else 0
         if not self._getIcon():
             return
         flags = gui32.NIF_ICON | gui32.NIF_MESSAGE | gui32.NIF_TIP | gui32.NIF_INFO
@@ -128,3 +135,12 @@ class CreateBalloontip:
         sleep(timeout)
         gui32.DestroyWindow(self._hwnd)
         gui32.UnregisterClass(self._classAtom, self._hinst)
+
+
+def test():
+    CreateBalloontip(title="Test Tip",
+                     message="This is a test balloontip")
+
+
+if __name__ == '__main__':
+    test()

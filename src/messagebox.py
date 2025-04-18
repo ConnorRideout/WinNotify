@@ -1,5 +1,5 @@
+from sys import argv as sys_argv
 from typing import Union as U
-from sys import argv
 
 from PyQt5.QtWidgets import (
     QApplication,
@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
 )
 
 
-class Messagebox(QMessageBox):
+class Messagebox:
     """-----
     Display a PyQt5.QMessageBox
 
@@ -46,8 +46,8 @@ class Messagebox(QMessageBox):
                     abort=QMessageBox.Abort,
                     retry=QMessageBox.Retry,
                     ignore=QMessageBox.Ignore)
-    out: str
-    _ = QApplication(argv[:1])
+    out: str = None
+    __app__ = QApplication(sys_argv)
 
     def __init__(self,
                  title: str,
@@ -57,15 +57,17 @@ class Messagebox(QMessageBox):
                             QMessageBox.StandardButtons] = QMessageBox.Ok,
                  default: QMessageBox.StandardButton = QMessageBox.NoButton,
                  escape: QMessageBox.StandardButton = QMessageBox.NoButton):
-        QMessageBox.__init__(self)
-        self.setWindowTitle(title)
-        self.setText(message)
-        self.setIcon(icon)
-        self.setStandardButtons(buttons)
-        self.setDefaultButton(default)
-        self.setEscapeButton(escape)
-        self.buttonClicked.connect(self._btnclick)
-        self.exec()
+        self.messagebox = QMessageBox()
+        self.messagebox.setStyleSheet("font-size: 11pt;")
+        self.messagebox.setWindowTitle(title)
+        self.messagebox.setText(message)
+        self.messagebox.setIcon(icon)
+        self.messagebox.setStandardButtons(buttons)
+        self.messagebox.setDefaultButton(default)
+        self.messagebox.setEscapeButton(escape)
+        self.messagebox.setStyleSheet('font-size: 10pt;')
+        self.messagebox.buttonClicked.connect(self._btnclick)
+        self.messagebox.exec()
 
     def _btnclick(self, btn: QAbstractButton):
         self.out = btn.text().lstrip("&").replace(' ', '').lower()
@@ -85,18 +87,20 @@ class Messagebox(QMessageBox):
 default button, the last will be the 'escape' button if listed. Any combination of: ok, open, save, cancel, close, discard, \
 apply, reset, restoredefaults, help, saveall, yes, yestoall, no, notoall, abort, retry, ignore
 
-        icon (str, optional): [default="question"] The messagebox icon. One of: noicon, question, info, warning, critical
-
-        sound (str, optional): [default="silent"] The sound to play with the messagebox. One of: silent, info, error
+        icon (str, optional): [default="question"] The messagebox icon. One of: noicon, question, info, warning, critical. \
+Note that this option will also change the sound that plays when the messagebox appears
 
 
         Returns:
         --------
+        None : The user closed the window
+
         str : The lowercase text of the pressed button
         """
 
         btnlst = [cls._buttons.get(btnstr.lower(), QMessageBox.NoButton)
                   for btnstr in buttons]
+        escape_btn = btnlst[-1] if len(btnlst) > 2 else QMessageBox.NoButton
         btns = QMessageBox.NoButton
         for btn in btnlst:
             btns |= btn
@@ -105,7 +109,7 @@ apply, reset, restoredefaults, help, saveall, yes, yestoall, no, notoall, abort,
                    icon=cls._icons.get(icon.lower(), QMessageBox.NoIcon),
                    buttons=btns,
                    default=btnlst[0],
-                   escape=btnlst[-1]).out
+                   escape=escape_btn).out
 
     @classmethod
     def showinfo(cls, title: str, message: str) -> None:
@@ -156,7 +160,7 @@ apply, reset, restoredefaults, help, saveall, yes, yestoall, no, notoall, abort,
             icon=QMessageBox.Critical)
 
 
-if __name__ == '__main__':
+def test():
     answer = Messagebox.askquestion("Ask Question",
                                     "This is Messagebox.askquestion. The output is saved")
     Messagebox.showinfo("Show Info",
@@ -165,3 +169,7 @@ if __name__ == '__main__':
                            "This is Messagebox.showwarning")
     Messagebox.showerror("Show Error",
                          "This is Messagebox.showerror")
+
+
+if __name__ == '__main__':
+    test()

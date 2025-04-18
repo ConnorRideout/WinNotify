@@ -1,27 +1,31 @@
-from sys import argv
-from PyQt5.QtCore import Qt
+from sys import argv as sys_argv
+from PyQt5.QtGui import QIcon
 
 from PyQt5.QtWidgets import (
-    QApplication,
-    QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
+    QApplication,
     QFormLayout,
-    QLayout,
+    QVBoxLayout,
+    QScrollArea,
     QLineEdit,
     QComboBox,
-    QSpinBox,
     QCheckBox,
+    QSpinBox,
+    QDialog,
+    QLayout,
     QWidget,
     QLabel
 )
-from typing import (
-    Optional as O,
-    Union as U
-)
+from typing import Optional as O, Union as U
+
+try:
+    from .playsound import PlaySound
+except ImportError:
+    from playsound import PlaySound
 
 
-class InputDialog(QDialog):
+class InputDialog:
     """-----
     Display a PyQt5.QDialog asking for input
 
@@ -41,53 +45,83 @@ class InputDialog(QDialog):
     ChildWidget|ChWgt: Create a child widget for use with above methods. One of <checkbox>, <combobox>, <spinbox>, or <textbox>
     """
 
-    __app__ = QApplication(argv[:1])
+    __app__ = QApplication(sys_argv)
     _layout: QFormLayout
+    _main_layout: QVBoxLayout
     _fields: list[U[QWidget, QLayout,
                     tuple[U[str, QWidget], U[QWidget, QLayout]]]]
     out: dict[str, U[str, int, bool]]
 
-    def __init__(self,
-                 title: str,
-                 input_fields: list[U[QWidget, QLayout,
-                                      tuple[U[str, QWidget], U[QWidget, QLayout]]]],
-                 parent: QWidget = None):
-        QDialog.__init__(self, parent)
-        self.setWindowTitle(title)
+    def __init__(
+        self,
+        title: str,
+        input_fields: list[
+            U[QWidget, QLayout, tuple[U[str, QWidget], U[QWidget, QLayout]]]
+        ],
+        parent: QWidget = None,
+        playsound: str = None,
+        icon: QIcon = None,
+    ):
+        """-----
+        Parameters
+        ----------
+        title (str): the window title
+
+        input_fields (list[QWidget | QLayout | tuple[str | QWidget, QWidget | QLayout]]): the fields to display
+
+        parent (QWidget, optional): [default=None] the parent widget
+
+        playsound (str, optional): [default=None] whether to play a sound. One of None, "alert", or "error"
+
+        icon (QIcon, optional): [default=None] an icon to set for the dialog window
+
+        """
+        self.dialog = QDialog(parent)
+        self.dialog.setWindowTitle(title)
+        self.dialog.setMinimumWidth(450)
+        if icon:
+            self.dialog.setWindowIcon(icon)
         # set defaults
         self.out = dict()
-        font = self.font()
-        font.setPointSize(11)
-        self.setFont(font)
-        # construct widgets
-        self._layout = QFormLayout()
+        self.dialog.setStyleSheet("QDialog {background-color: #202328;}\n"
+                                  "QWidget {font-size: 11pt;}")
+        # construct layouts
+        self._main_layout = QVBoxLayout(self.dialog)
+        scrollArea = QScrollArea(self.dialog)
+        scrollArea.setWidgetResizable(True)
+        scrollAreaContents = QWidget()
+        scrollAreaContents.setStyleSheet("background-color: #2d3640;"
+                                         "font-size: 10pt;")
+        scrollArea.setWidget(scrollAreaContents)
+        self._layout = QFormLayout(scrollAreaContents)
         self._layout.setVerticalSpacing(8)
+        # construct widgets
         self._fields = list()
-        while input_fields:
-            item = input_fields.pop(0)
+        for item in input_fields:
             if isinstance(item, (list, tuple)):
                 self._fields.append(item)
                 self._layout.addRow(*item)
             else:
-                self._layout.addRow(item)
+                self._main_layout.addWidget(item)
+        self._main_layout.addWidget(scrollArea)
         # construct buttonbox
         btnbox = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        )
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         btnbox.accepted.connect(self._submit)
         btnbox.rejected.connect(self._cancel)
         btnbox.setCenterButtons(True)
-        self._layout.addRow(btnbox)
+        self._main_layout.addWidget(btnbox)
         # run
-        self.setLayout(self._layout)
-        self.show()
-        if not parent:
-            self.__app__.exec()
+        if playsound == "error":
+            PlaySound("Hand")
+        elif playsound == "alert":
+            PlaySound("Beep")
+        self.dialog.exec()
 
     def _submit(self):
         """called when the <Ok> button is pressed. Override this function to change the default action (default=set <self.out> to a dictionary where labelText=value, then close the input dialog)"""
-        self.out = dict()
-        for (lbl, wgt) in self._fields:
+
+        for lbl, wgt in self._fields:
             if isinstance(wgt, QLineEdit):
                 val = wgt.text()
             elif isinstance(wgt, QComboBox):
@@ -97,13 +131,13 @@ class InputDialog(QDialog):
             elif isinstance(wgt, QCheckBox):
                 val = wgt.isChecked()
             else:
-                val = 'ERROR'
+                val = "ERROR"
             self.out[lbl] = val
-        self.close()
+        self.dialog.close()
 
     def _cancel(self):
         """called when the <Cancel> button is pressed. Override this function to change the default action (default=close input dialog)"""
-        self.close()
+        self.dialog.close()
 
     class ChildWidget:
         """Builder class for the dialog. Available methods are checkbox, combobox, spinbox, or textbox"""
@@ -147,15 +181,19 @@ class InputDialog(QDialog):
             cbx = QComboBox()
             cbx.addItems(options)
             if default:
-                i = (cbx.findText(default)
-                     if isinstance(default, str)
-                     else default)
+                i = cbx.findText(default) if isinstance(
+                    default, str) else default
                 cbx.setCurrentIndex(i)
             cbx.adjustSize()
             cbx.setMinimumHeight(round(cbx.height() * 1.7))
             return cbx
 
-        def spinbox(from_: U[int, float], to: U[int, float], step: U[int, float] = 1, default: U[int, float] = None) -> U[QSpinBox, QDoubleSpinBox]:
+        def spinbox(
+            from_: U[int, float],
+            to: U[int, float],
+            step: U[int, float] = 1,
+            default: U[int, float] = None,
+        ) -> U[QSpinBox, QDoubleSpinBox]:
             """-----
             Build a QSpinBox | QDoubleSpinBox
 
@@ -172,7 +210,7 @@ class InputDialog(QDialog):
 
             Returns:
             --------
-            QSpinBox | QDoubleSpinBox : the initialized QSpinBox (ints) or QDoubleSpinBox (floats)
+            QSpinBox | QDoubleSpinBox : the initialized QSpinBox (if integers) or QDoubleSpinBox (if floats)
             """
 
             if isinstance(from_ + to + step, float):
@@ -186,18 +224,20 @@ class InputDialog(QDialog):
             sbx.setSingleStep(step)
             sbx.setWrapping(True)
             sbx.adjustSize()
-            sbx.setMinimumHeight(round(sbx.height()*1.7))
+            sbx.setMinimumHeight(round(sbx.height() * 1.7))
             if isinstance(default, (int, float)):
                 sbx.setValue(default)
             return sbx
 
-        def textbox(hint: str = None) -> QLineEdit:
+        def textbox(hint: str = None, default: str = None) -> QLineEdit:
             """-----
             Build a QLineEdit
 
             Parameters
             ----------
             hint (str, optional): [default=None] the textbox's placeholder text
+
+            default (str, optional): [default=None] the text to place in the textbox. This will overwrite the hint if both are provided
 
 
             Returns:
@@ -207,15 +247,25 @@ class InputDialog(QDialog):
 
             txt = QLineEdit()
             txt.adjustSize()
-            txt.setMinimumHeight(round(txt.height()*1.7))
-            if hint:
+            txt.setMinimumHeight(round(txt.height() * 1.7))
+            if default:
+                txt.setText(default)
+            elif hint:
                 txt.setPlaceholderText(hint)
             return txt
 
     ChWgt = ChildWidget
 
     @classmethod
-    def multiinput(cls, title: str, input_fields: list[tuple[str, U[QLineEdit, QComboBox, QSpinBox, QCheckBox]]], message: str = None, parent: QWidget = None) -> dict[str, U[str, int, bool]]:
+    def multiinput(
+        cls,
+        title: str,
+        input_fields: list[tuple[str, U[QLineEdit, QComboBox, QSpinBox, QCheckBox]]],
+        message: str = None,
+        parent: QWidget = None,
+        playsound: str = None,
+        icon: QIcon = None,
+    ) -> dict[str, U[str, int, bool]]:
         """-----
         Asks the user for multiple inputs and returns the responses in a dictionary
 
@@ -228,6 +278,10 @@ class InputDialog(QDialog):
         message (str, optional): [default=None] the message to put above all other inputs
 
         parent (QWidget, optional): [default=None] the parent of the window
+
+        playsound (str, optional): [default=None] a sound to play. One of None, "alert", or "error"
+
+        icon (QIcon, optional): [default=None] an icon to set for the dialog window
 
 
         Returns:
@@ -242,12 +296,28 @@ class InputDialog(QDialog):
             msg.setWordWrap(True)
             input_fields = list(input_fields)
             input_fields.insert(0, msg)
-        return cls(title=title,
-                   parent=parent,
-                   input_fields=input_fields).out or None
+        return (
+            cls(
+                title=title,
+                parent=parent,
+                input_fields=input_fields,
+                playsound=playsound,
+                icon=icon,
+            ).out
+            or None
+        )
 
     @classmethod
-    def textinput(cls, title: str, label: str, default: str = None, message: str = None, parent: QWidget = None) -> O[str]:
+    def textinput(
+        cls,
+        title: str,
+        label: str,
+        default: str = None,
+        message: str = None,
+        parent: QWidget = None,
+        playsound: str = None,
+        icon: QIcon = None,
+    ) -> O[str]:
         """-----
         Asks the user for a string input and returns the response
 
@@ -262,6 +332,10 @@ class InputDialog(QDialog):
         message (str, optional): [default=None] the message to put above all other inputs
 
         parent (QWidget, optional): [default=None] the parent of the window
+
+        playsound (str, optional): [default=None] a sound to play. One of None, "alert", or "error"
+
+        icon (QIcon, optional): [default=None] an icon to set for the dialog window
 
 
         Returns:
@@ -278,12 +352,26 @@ class InputDialog(QDialog):
             in_f = [msg, (label, wgt)]
         else:
             in_f = [(label, wgt)]
-        return cls(title=title,
-                   parent=parent,
-                   input_fields=in_f).out.get(label)
+        return cls(
+            title=title,
+            parent=parent,
+            input_fields=in_f,
+            playsound=playsound,
+            icon=icon,
+        ).out.get(label)
 
     @classmethod
-    def comboinput(cls, title: str, label: str, options: list[str], default: U[str, int] = 0, message: str = None, parent: QWidget = None) -> O[str]:
+    def comboinput(
+        cls,
+        title: str,
+        label: str,
+        options: list[str],
+        default: U[str, int] = 0,
+        message: str = None,
+        parent: QWidget = None,
+        playsound: str = None,
+        icon: QIcon = None,
+    ) -> O[str]:
         """-----
         Asks the user to choose an option from a combobox and returns the response
 
@@ -301,6 +389,10 @@ class InputDialog(QDialog):
 
         parent (QWidget, optional): [default=None] the parent of the window
 
+        playsound (str, optional): [default=None] a sound to play. One of None, "alert", or "error"
+
+        icon (QIcon, optional): [default=None] an icon to set for the dialog window
+
 
         Returns:
         --------
@@ -315,12 +407,28 @@ class InputDialog(QDialog):
             msg = QLabel(message)
             msg.setWordWrap(True)
             fields.insert(0, msg)
-        return cls(title=title,
-                   parent=parent,
-                   input_fields=fields).out.get(label)
+        return cls(
+            title=title,
+            parent=parent,
+            input_fields=fields,
+            playsound=playsound,
+            icon=icon,
+        ).out.get(label)
 
     @classmethod
-    def spininput(cls, title: str, label: str, from_: U[int, float], to: U[int, float], step: U[int, float] = 1, default: U[int, float] = None, message: str = None, parent: QWidget = None) -> O[U[int, float]]:
+    def spininput(
+        cls,
+        title: str,
+        label: str,
+        from_: U[int, float],
+        to: U[int, float],
+        step: U[int, float] = 1,
+        default: U[int, float] = None,
+        message: str = None,
+        parent: QWidget = None,
+        playsound: str = None,
+        icon: QIcon = None,
+    ) -> O[U[int, float]]:
         """-----
         Asks the user to choose a number (integer or float) and returns the response
 
@@ -342,6 +450,10 @@ class InputDialog(QDialog):
 
         parent (QWidget, optional): [default=None] the parent of the window
 
+        playsound (str, optional): [default=None] a sound to play. One of None, "alert", or "error"
+
+        icon (QIcon, optional): [default=None] an icon to set for the dialog window
+
 
         Returns:
         --------
@@ -356,19 +468,37 @@ class InputDialog(QDialog):
             msg = QLabel(message)
             msg.setWordWrap(True)
             fields.insert(0, msg)
-        return cls(title=title,
-                   parent=parent,
-                   input_fields=fields).out.get(label)
+        return cls(
+            title=title,
+            parent=parent,
+            input_fields=fields,
+            playsound=playsound,
+            icon=icon,
+        ).out.get(label)
 
 
-if __name__ == '__main__':
-    fields = [('This is a checkbox', InputDialog.ChildWidget.checkbox(default=True)),
-              ('This is a combobox', InputDialog.ChildWidget.combobox(options=['option 1', 'option 2', 'option 3'],
-                                                                      default='option 2')),
-              ('This is a spinbox', InputDialog.ChildWidget.spinbox(from_=0,
-                                                                    to=5,
-                                                                    step=0.5)),
-              ('This is a textbox', InputDialog.ChildWidget.textbox())]
-    print(InputDialog.multiinput(title='test',
-                                 input_fields=fields,
-                                 message='An example multiinput InputDialog.'))
+def test():
+    from PyQt5.QtWidgets import QMessageBox
+
+    fields = [
+        ("This is a checkbox", InputDialog.ChildWidget.checkbox(default=True)),
+        (
+            "This is a combobox",
+            InputDialog.ChildWidget.combobox(
+                options=["option 1", "option 2", "option 3"], default="option 2"
+            ),
+        ),
+        ("This is a spinbox", InputDialog.ChildWidget.spinbox(from_=0, to=5, step=0.5)),
+        ("This is a textbox", InputDialog.ChildWidget.textbox()),
+    ]
+    ans = InputDialog.multiinput(
+        title="test", input_fields=fields, message="An example multiinput InputDialog."
+    )
+    mbox = QMessageBox()
+    mbox.setWindowTitle("Result")
+    mbox.setText(str(ans))
+    mbox.exec()
+
+
+if __name__ == "__main__":
+    test()

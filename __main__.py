@@ -1,5 +1,5 @@
 try:
-    from . import *
+    from .src import *
 except ImportError:
     from pathlib import Path
     from subprocess import run
@@ -19,14 +19,14 @@ def main():
 
     kwargs = InputDialog.multiinput(
         title='InputDialog Example',
-        input_fields=(
-            ('title', InputDialog._textbox(
-                default='CreateBalloontip Example')),
-            ('message', InputDialog._textbox(
-                default='An example message')),
-            ('timeout', InputDialog._spinbox(
-                min=1, max=10, default=5))
-        ))
+        input_fields=[
+            ('title', InputDialog.ChWgt.textbox(
+                hint='CreateBalloontip Example')),
+            ('message', InputDialog.ChWgt.textbox(
+                hint='An example message')),
+            ('timeout', InputDialog.ChWgt.spinbox(
+                from_=1, to=10, default=5))
+        ])
 
     if kwargs:
         CreateBalloontip(**kwargs)

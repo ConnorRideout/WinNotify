@@ -1,6 +1,7 @@
-from subprocess import (Popen,
-                        CREATE_NO_WINDOW
-                        )
+from subprocess import (
+    Popen,
+    CREATE_NO_WINDOW
+)
 from pathlib import Path
 
 
@@ -10,7 +11,7 @@ def PlaySound(sound: str = "Hand"):
 
     Parameters
     ----------
-    sound (str, optional): [default="Hand"] Which sound to play. One of "Asterisk", "Beep", "Exclamation", "Hand", "Question", or a "Windows [__].wav" file from C:\\WINDOWS\\Media
+    sound (str, optional): [default="Hand"] Which sound to play. One of "Asterisk", "Beep", "Exclamation", "Hand", "Question", or a "Windows <_>.wav" file from C:\\WINDOWS\\Media
     """
 
     syssounds = ["Asterisk", "Beep", "Exclamation", "Hand", "Question"]
@@ -25,3 +26,14 @@ def PlaySound(sound: str = "Hand"):
         raise ValueError('< sound > parameter must be one of "Asterisk", "Beep", "Exclamation", '
                          '"Hand", "Question", or a "Windows *.wav" file from C: \\WINDOWS\\Media')
     Popen(['powershell', cmd], creationflags=CREATE_NO_WINDOW)
+
+
+def test():
+    from time import sleep
+    PlaySound()
+    sleep(2)
+    PlaySound("Asterisk")
+
+
+if __name__ == "__main__":
+    test()
